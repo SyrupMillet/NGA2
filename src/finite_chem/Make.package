@@ -1,0 +1,4 @@
+f90EXE_sources += finitechem_class.f90
+
+INCLUDE_LOCATIONS += $(NGA_HOME)/src/finite_chem
+VPATH_LOCATIONS   += $(NGA_HOME)/src/finite_chem

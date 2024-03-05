@@ -850,19 +850,23 @@ contains
       allocate(new_bc)
       new_bc%name=trim(adjustl(name))
       new_bc%type=type
+
       select case (lowercase(face))
       case ('x'); new_bc%face='x'
       case ('y'); new_bc%face='y'
       case ('z'); new_bc%face='z'
       case default; call die('[lowmach add_bcond] Unknown bcond face - expecting x, y, or z')
       end select
+
       new_bc%itr=iterator(pg=this%cfg,name=new_bc%name,locator=locator,face=new_bc%face)
+
       select case (dir) ! Outward-oriented
       case (+1); new_bc%dir=+1
       case (-1); new_bc%dir=-1
       case ( 0); new_bc%dir= 0
       case default; call die('[lowmach add_bcond] Unknown bcond dir - expecting -1, +1, or 0')
       end select
+      
       new_bc%rdir=real(new_bc%dir,WP)
       new_bc%canCorrect=canCorrect
       
@@ -1231,7 +1235,6 @@ contains
       real(WP), dimension(this%cfg%imino_:,this%cfg%jmino_:,this%cfg%kmino_:), intent(out) :: Pgrady !< Needs to be (imino_:imaxo_,jmino_:jmaxo_,kmino_:kmaxo_)
       real(WP), dimension(this%cfg%imino_:,this%cfg%jmino_:,this%cfg%kmino_:), intent(out) :: Pgradz !< Needs to be (imino_:imaxo_,jmino_:jmaxo_,kmino_:kmaxo_)
       integer :: i,j,k
-      Pgradx=0.0_WP; Pgrady=0.0_WP; Pgradz=0.0_WP
       do k=this%cfg%kmin_,this%cfg%kmax_
          do j=this%cfg%jmin_,this%cfg%jmax_
             do i=this%cfg%imin_,this%cfg%imax_
