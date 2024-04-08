@@ -19,6 +19,7 @@ module vdscalar_class
    
    ! List of available advection schemes for scalar transport
    integer, parameter, public :: quick=1                    !< Quick scheme
+   integer, parameter, public :: upwind=2                   !< upwind scheme
    
    
    !> Boundary conditions for the incompressible solver
@@ -140,6 +141,13 @@ contains
       ! Prepare advection scheme
       self%scheme=scheme
       select case (self%scheme)
+      case (upwind)
+         ! Check current overlap
+         if (self%cfg%no .lt. 1) call die('[multiscalar constructor] Scalar transport scheme requires larger overlap')
+         ! Set interpolation stencil sizes
+         self%nst = 1
+         self%stp1 = -(self%nst + 1)/2; self%stp2 = self%nst + self%stp1 - 1
+         self%stm1 = -(self%nst - 1)/2; self%stm2 = self%nst + self%stm1 - 1
       case (quick)
          ! Check current overlap
          if (self%cfg%no.lt.2) call die('[scalar constructor] vdscalar transport scheme requires larger overlap')
@@ -211,6 +219,10 @@ contains
       allocate(this%itpsc_zm(this%stm1:this%stm2,this%cfg%imin_:this%cfg%imax_+1,this%cfg%jmin_:this%cfg%jmax_+1,this%cfg%kmin_:this%cfg%kmax_+1)) !< Z-face-centered
       ! Create scalar interpolation coefficients to cell faces
       select case (this%scheme)
+      case (upwind)
+         this%itpsc_xp = 1.0_WP; this%itpsc_xm = 1.0_WP
+         this%itpsc_yp = 1.0_WP; this%itpsc_ym = 1.0_WP
+         this%itpsc_zp = 1.0_WP; this%itpsc_zm = 1.0_WP
       case (quick)
          do k=this%cfg%kmin_,this%cfg%kmax_+1
             do j=this%cfg%jmin_,this%cfg%jmax_+1
