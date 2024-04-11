@@ -161,28 +161,28 @@ contains
       ! Prepare advection scheme
       self%scheme = scheme
       select case (self%scheme)
-      case (upwind)
+       case (upwind)
          ! Check current overlap
          if (self%cfg%no .lt. 1) call die('[multiscalar constructor] Scalar transport scheme requires larger overlap')
          ! Set interpolation stencil sizes
          self%nst = 1
          self%stp1 = -(self%nst + 1)/2; self%stp2 = self%nst + self%stp1 - 1
          self%stm1 = -(self%nst - 1)/2; self%stm2 = self%nst + self%stm1 - 1
-      case (quick)
+       case (quick)
          ! Check current overlap
          if (self%cfg%no .lt. 2) call die('[multiscalar constructor] Scalar transport scheme requires larger overlap')
          ! Set interpolation stencil sizes
          self%nst = 3
          self%stp1 = -(self%nst + 1)/2; self%stp2 = self%nst + self%stp1 - 1
          self%stm1 = -(self%nst - 1)/2; self%stm2 = self%nst + self%stm1 - 1
-      case (bquick)
+       case (bquick)
          ! Check current overlap
          if (self%cfg%no .lt. 2) call die('[multiscalar constructor] Scalar transport scheme requires larger overlap')
          ! Set interpolation stencil sizes
          self%nst = 3
          self%stp1 = -(self%nst + 1)/2; self%stp2 = self%nst + self%stp1 - 1
          self%stm1 = -(self%nst - 1)/2; self%stm2 = self%nst + self%stm1 - 1
-      case default
+       case default
          call die('[multiscalar constructor] Unknown scalar transport scheme selected')
       end select
 
@@ -252,11 +252,11 @@ contains
       allocate (this%itpsc_zm(this%stm1:this%stm2, this%cfg%imin_:this%cfg%imax_ + 1, this%cfg%jmin_:this%cfg%jmax_ + 1, this%cfg%kmin_:this%cfg%kmax_ + 1)) !< Z-face-centered
       ! Create scalar interpolation coefficients to cell faces
       select case (this%scheme)
-      case (upwind)
+       case (upwind)
          this%itpsc_xp = 1.0_WP; this%itpsc_xm = 1.0_WP
          this%itpsc_yp = 1.0_WP; this%itpsc_ym = 1.0_WP
          this%itpsc_zp = 1.0_WP; this%itpsc_zm = 1.0_WP
-      case (quick, bquick)
+       case (quick, bquick)
          do k = this%cfg%kmin_, this%cfg%kmax_ + 1
             do j = this%cfg%jmin_, this%cfg%jmax_ + 1
                do i = this%cfg%imin_, this%cfg%imax_ + 1
@@ -338,30 +338,30 @@ contains
             do i = this%cfg%imin_, this%cfg%imax_ + 1
                ! X face
                if (this%mask(i - 1, j, k) .eq. 2) then
-                  this%itpsc_xm(:, i, j, k) = 0.0_WP; this%itpsc_xm(-1, i, j, k) = 1.0_WP
+                  this%itpsc_xm(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_xm(-1, i, j, k) = 1.0_WP
                   this%itpsc_xp(:, i, j, k) = 0.0_WP; this%itpsc_xp(-1, i, j, k) = 1.0_WP
                end if
                if (this%mask(i, j, k) .eq. 2) then
                   this%itpsc_xm(:, i, j, k) = 0.0_WP; this%itpsc_xm(0, i, j, k) = 1.0_WP
-                  this%itpsc_xp(:, i, j, k) = 0.0_WP; this%itpsc_xp(0, i, j, k) = 1.0_WP
+                  this%itpsc_xp(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_xp(0, i, j, k) = 1.0_WP
                end if
                ! Y face
                if (this%mask(i, j - 1, k) .eq. 2) then
-                  this%itpsc_ym(:, i, j, k) = 0.0_WP; this%itpsc_ym(-1, i, j, k) = 1.0_WP
+                  this%itpsc_ym(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_ym(-1, i, j, k) = 1.0_WP
                   this%itpsc_yp(:, i, j, k) = 0.0_WP; this%itpsc_yp(-1, i, j, k) = 1.0_WP
                end if
                if (this%mask(i, j, k) .eq. 2) then
                   this%itpsc_ym(:, i, j, k) = 0.0_WP; this%itpsc_ym(0, i, j, k) = 1.0_WP
-                  this%itpsc_yp(:, i, j, k) = 0.0_WP; this%itpsc_yp(0, i, j, k) = 1.0_WP
+                  this%itpsc_yp(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_yp(0, i, j, k) = 1.0_WP
                end if
                ! Z face
                if (this%mask(i, j, k - 1) .eq. 2) then
-                  this%itpsc_zm(:, i, j, k) = 0.0_WP; this%itpsc_zm(-1, i, j, k) = 1.0_WP
+                  this%itpsc_zm(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_zm(-1, i, j, k) = 1.0_WP
                   this%itpsc_zp(:, i, j, k) = 0.0_WP; this%itpsc_zp(-1, i, j, k) = 1.0_WP
                end if
                if (this%mask(i, j, k) .eq. 2) then
                   this%itpsc_zm(:, i, j, k) = 0.0_WP; this%itpsc_zm(0, i, j, k) = 1.0_WP
-                  this%itpsc_zp(:, i, j, k) = 0.0_WP; this%itpsc_zp(0, i, j, k) = 1.0_WP
+                  this%itpsc_zp(:, i, j, k) = 0.0_WP; if (this%nst.gt.2) this%itpsc_zp(0, i, j, k) = 1.0_WP
                end if
             end do
          end do
@@ -418,7 +418,7 @@ contains
       call this%adjust_metrics()
       ! Bquick needs to remember the quick coefficients
       select case (this%scheme)
-      case (bquick)
+       case (bquick)
          allocate (this%bitp_xp(this%stp1:this%stp2, this%cfg%imin_:this%cfg%imax_ + 1, this%cfg%jmin_:this%cfg%jmax_ + 1, this%cfg%kmin_:this%cfg%kmax_ + 1)); this%bitp_xp = this%itpsc_xp
          allocate (this%bitp_xm(this%stm1:this%stm2, this%cfg%imin_:this%cfg%imax_ + 1, this%cfg%jmin_:this%cfg%jmax_ + 1, this%cfg%kmin_:this%cfg%kmax_ + 1)); this%bitp_xm = this%itpsc_xm
          allocate (this%bitp_yp(this%stp1:this%stp2, this%cfg%imin_:this%cfg%imax_ + 1, this%cfg%jmin_:this%cfg%jmax_ + 1, this%cfg%kmin_:this%cfg%kmax_ + 1)); this%bitp_yp = this%itpsc_yp
@@ -473,13 +473,13 @@ contains
       new_bc%type = type
       if (present(dir)) then
          select case (lowercase(dir))
-         case ('+x', 'x+', 'xp', 'px'); new_bc%dir = 1
-         case ('-x', 'x-', 'xm', 'mx'); new_bc%dir = 2
-         case ('+y', 'y+', 'yp', 'py'); new_bc%dir = 3
-         case ('-y', 'y-', 'ym', 'my'); new_bc%dir = 4
-         case ('+z', 'z+', 'zp', 'pz'); new_bc%dir = 5
-         case ('-z', 'z-', 'zm', 'mz'); new_bc%dir = 6
-         case default; call die('[multivdscalar add_bcond] Unknown bcond direction')
+          case ('+x', 'x+', 'xp', 'px'); new_bc%dir = 1
+          case ('-x', 'x-', 'xm', 'mx'); new_bc%dir = 2
+          case ('+y', 'y+', 'yp', 'py'); new_bc%dir = 3
+          case ('-y', 'y-', 'ym', 'my'); new_bc%dir = 4
+          case ('+z', 'z+', 'zp', 'pz'); new_bc%dir = 5
+          case ('-z', 'z-', 'zm', 'mz'); new_bc%dir = 6
+          case default; call die('[multivdscalar add_bcond] Unknown bcond direction')
          end select
       else
          if (new_bc%type .eq. neumann) call die('[multivdscalar apply_bcond] Neumann requires a direction')
@@ -496,14 +496,14 @@ contains
 
       ! Now adjust the metrics accordingly
       select case (new_bc%type)
-      case (dirichlet)
+       case (dirichlet)
          do n = 1, new_bc%itr%n_
             i = new_bc%itr%map(1, n); j = new_bc%itr%map(2, n); k = new_bc%itr%map(3, n)
             this%mask(i, j, k) = 2
          end do
-      case (neumann)
+       case (neumann)
          ! No modification - this assumes Neumann is only applied at walls or domain boundaries
-      case default
+       case default
          call die('[multivdscalar apply_bcond] Unknown bcond type')
       end select
 
@@ -543,12 +543,12 @@ contains
             ! Select appropriate action based on the bcond type
             select case (my_bc%type)
 
-            case (dirichlet)           ! Apply Dirichlet conditions
+             case (dirichlet)           ! Apply Dirichlet conditions
 
                ! This is done by the user directly
                ! Unclear whether we want to do this within the solver...
 
-            case (neumann)             ! Apply Neumann condition
+             case (neumann)             ! Apply Neumann condition
                ! Implement based on bcond direction
                do nsc = 1, this%nscalar
                   do n = 1, my_bc%itr%n_
@@ -558,7 +558,7 @@ contains
                   end do
                end do
 
-            case default
+             case default
                call die('[multivdscalar apply_bcond] Unknown bcond type')
             end select
 
@@ -606,19 +606,19 @@ contains
                   ! Fluxes on x-face
                   FX(i, j, k) = -0.5_WP*(rhoU(i, j, k) + abs(rhoU(i, j, k)))*sum(this%itpsc_xp(:, i, j, k)*this%SC(i + this%stp1:i + this%stp2, j, k, nsc)) &
                   &         - 0.5_WP*(rhoU(i, j, k) - abs(rhoU(i, j, k)))*sum(this%itpsc_xm(:, i, j, k)*this%SC(i + this%stm1:i + this%stm2, j, k, nsc)) &
-          &         + sum(this%itp_x(:, i, j, k)*this%diff(i - 1:i, j, k, nsc))*sum(this%grdsc_x(:, i, j, k)*this%SC(i - 1:i, j, k, nsc))
+                  &         + sum(this%itp_x(:, i, j, k)*this%diff(i - 1:i, j, k, nsc))*sum(this%grdsc_x(:, i, j, k)*this%SC(i - 1:i, j, k, nsc))
                   ! Fluxes on y-face
                   FY(i, j, k) = -0.5_WP*(rhoV(i, j, k) + abs(rhoV(i, j, k)))*sum(this%itpsc_yp(:, i, j, k)*this%SC(i, j + this%stp1:j + this%stp2, k, nsc)) &
                   &         - 0.5_WP*(rhoV(i, j, k) - abs(rhoV(i, j, k)))*sum(this%itpsc_ym(:, i, j, k)*this%SC(i, j + this%stm1:j + this%stm2, k, nsc)) &
-          &         + sum(this%itp_y(:, i, j, k)*this%diff(i, j - 1:j, k, nsc))*sum(this%grdsc_y(:, i, j, k)*this%SC(i, j - 1:j, k, nsc))
+                  &         + sum(this%itp_y(:, i, j, k)*this%diff(i, j - 1:j, k, nsc))*sum(this%grdsc_y(:, i, j, k)*this%SC(i, j - 1:j, k, nsc))
                   ! Fluxes on z-face
                   FZ(i, j, k) = -0.5_WP*(rhoW(i, j, k) + abs(rhoW(i, j, k)))*sum(this%itpsc_zp(:, i, j, k)*this%SC(i, j, k + this%stp1:k + this%stp2, nsc)) &
                   &         - 0.5_WP*(rhoW(i, j, k) - abs(rhoW(i, j, k)))*sum(this%itpsc_zm(:, i, j, k)*this%SC(i, j, k + this%stm1:k + this%stm2, nsc)) &
-          &         + sum(this%itp_z(:, i, j, k)*this%diff(i, j, k - 1:k, nsc))*sum(this%grdsc_z(:, i, j, k)*this%SC(i, j, k - 1:k, nsc))
+                  &         + sum(this%itp_z(:, i, j, k)*this%diff(i, j, k - 1:k, nsc))*sum(this%grdsc_z(:, i, j, k)*this%SC(i, j, k - 1:k, nsc))
                end do
             end do
          end do
-         
+
          ! Time derivative of rhoSC
          do k = this%cfg%kmin_, this%cfg%kmax_
             do j = this%cfg%jmin_, this%cfg%jmax_
@@ -815,7 +815,7 @@ contains
       implicit none
       class(multivdscalar), intent(inout) :: this
       select case (this%scheme)
-      case (bquick)
+       case (bquick)
          this%itpsc_xp = this%bitp_xp
          this%itpsc_xm = this%bitp_xm
          this%itpsc_yp = this%bitp_yp
@@ -833,7 +833,7 @@ contains
       logical, dimension(this%cfg%imino_:, this%cfg%jmino_:, this%cfg%kmino_:, 1:), intent(in) :: flag !< Needs to be (imino_:imaxo_,jmino_:jmaxo_,kmino_:kmaxo_)
       integer :: i, j, k
       select case (this%scheme)
-      case (bquick)
+       case (bquick)
          do k = this%cfg%kmin_, this%cfg%kmax_ + 1
             do j = this%cfg%jmin_, this%cfg%jmax_ + 1
                do i = this%cfg%imin_, this%cfg%imax_ + 1
