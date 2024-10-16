@@ -19,11 +19,15 @@
 .DS_Store
 *.dSYM/
 
+# Python temporaries
+_*
+
 # Executable
 nga.*.exe
 
 # Build stuff
 build/
+Make.local
 *.mod
 
 # Doc stuff
@@ -54,3 +58,9 @@ examples/*/input*~
 !examples/airblast/atomizer.ply
 !examples/airblast/atomizer_tip.ply
 !examples/airblast/atomizer_box.ply
+!examples/simplex/simplex.input
+!examples/simplex/SIMPLEX_RSA_2022-10-17.stp
+!examples/collapse/collapse.bed
+!examples/collapse/collapse.png
+!examples/collapse/collapse_render.pvsm
+!examples/shock_droplet/shock_drop_nondim.m
